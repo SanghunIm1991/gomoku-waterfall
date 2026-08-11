@@ -69,6 +69,13 @@ Claudeがユーザーに判断や承認を仰ぎ、ユーザーが回答した�
   ```
 - ユーザー自身が手動でコミットする場合は、通常通りグローバルGit設定（ImSanghun / 21452104tpu@gmail.com）でコミットしてよい（接頭辞不要）
 
+## Claude Codeの権限設定（.claude/settings.json）
+
+`git add` / `git commit` の自動承認や `acceptEdits` モードなど、プロジェクトを問わず有用な権限設定は `docs/reusable_claude_settings.template.json` にまとめてある。新しいプロジェクトの `.claude/settings.json` にそのままコピーして使える。
+
+- `.claude/settings.json`: チーム・プロジェクトを問わず妥当な安定した許可設定を置く（上記テンプレートが該当）
+- `.claude/settings.local.json`: 個別ツールのパスや一時ファイルへの許可など、そのプロジェクト固有・その場限りの承認は、作業を進める中でその都度自然に蓄積させればよく、あらかじめ用意する必要はない
+
 ## フォルダ構成（ウォーターフォール型を採用する場合の例）
 
 ```
