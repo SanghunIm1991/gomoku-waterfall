@@ -84,7 +84,7 @@ flowchart TB
   - 盤面を初期状態（全マス空き）にリセットする
 - **保持データ**: 15×15マスの状態（空き／黒／白）
 - **依存**: COMP-07 Constants（盤面マス数）
-- **対応要件**: REQ-04, REQ-05, NFR-05
+- **対応要件**: REQ-04, REQ-05, REQ-13, NFR-05
 
 ### COMP-02 WinChecker（勝敗判定ロジック）
 
@@ -94,7 +94,7 @@ flowchart TB
   - 勝利成立時、ハイライト対象となる連続石の座標一覧を返す
 - **保持データ**: なし（Boardの状態を引数として受け取る純粋な判定処理）
 - **依存**: COMP-01 Board（盤面参照）、COMP-07 Constants（勝利に必要な連続数）
-- **対応要件**: REQ-08, REQ-12, CON-02
+- **対応要件**: REQ-08, REQ-12, NFR-05, CON-02
 
 ### COMP-03 GameState（対局状態管理）
 
@@ -107,7 +107,7 @@ flowchart TB
   - 対局状態をリセットする（Boardのリセットを含む）
 - **保持データ**: 現在の手番、対局終了フラグ、勝者、ハイライト対象座標
 - **依存**: COMP-01 Board、COMP-02 WinChecker
-- **対応要件**: REQ-03, REQ-06, REQ-09, REQ-10, REQ-11, REQ-13, CON-01
+- **対応要件**: REQ-03, REQ-04, REQ-05, REQ-06, REQ-07, REQ-09, REQ-10, REQ-11, REQ-13, CON-01
 
 ### COMP-04 MainWindow（メインウィンドウ）
 
@@ -116,19 +116,21 @@ flowchart TB
   - 手番／勝敗結果の表示テキストを更新する
   - リセットボタン押下時のコールバックを登録する
 - **依存**: COMP-05 BoardCanvas、COMP-07 Constants（ウィンドウサイズ）
-- **対応要件**: REQ-07, REQ-09, REQ-10, REQ-13, NFR-01, NFR-02
+- **対応要件**: REQ-07, REQ-09, REQ-10, REQ-13, NFR-01, NFR-05
+
+（NFR-02「起動」への対応は `src/main.py` のエントリポイント処理が担うため、MainWindow自体の対応要件には含めない。モジュール構成（4章）参照）
 
 ### COMP-05 BoardCanvas（盤面描画・入力）
 
-- **責務**: `tkinter.Canvas` 上に15×15の格子線・石・勝利ハイライトを描画する。マウスクリックのピクセル座標を最寄りの盤面交点座標に変換し、AppController に通知する。対局終了後のクリックについては、通知はController側の判断に委ねる（本コンポーネントは座標変換と描画のみを担当する）。
+- **責務**: `tkinter.Canvas` 上に15×15の格子線・石・勝利ハイライトを描画する。マウスクリックのピクセル座標を最寄りの盤面交点座標に変換し、AppController に通知する。対局終了後のクリックについては、通知はController側の判断に委ねる（本コンポーネントは座標変換と描画のみを担当する）。クリック位置が盤面の有効範囲（余白部分含む盤面外）に対応する場合は、最寄り交点への変換を行わず、コールバックを呼び出さない（無効なクリックとして無視し、AppController・GameStateには到達させない）。有効範囲の具体的な判定方法（許容誤差の基準等）は関数設計で定める。
 - **主な公開操作（概要）**:
   - 盤面グリッドを描画する
   - 指定座標に指定色の石を描画する
   - 指定座標一覧をハイライト表示する
   - 盤面表示をクリアする（リセット時）
-  - クリックイベントのコールバックを登録する（クリック時に交点座標を渡す）
+  - クリックイベントのコールバックを登録する（有効な交点上のクリック時のみ交点座標を渡す）
 - **依存**: COMP-07 Constants（盤面マス数・セルサイズ）
-- **対応要件**: REQ-01, REQ-02, REQ-04, REQ-12, NFR-01
+- **対応要件**: REQ-01, REQ-02, REQ-04, REQ-12, REQ-13, NFR-01, NFR-05
 
 ### COMP-06 AppController（アプリケーション制御）
 
@@ -162,29 +164,36 @@ sequenceDiagram
     participant Main as MainWindow
 
     User->>Canvas: 盤面上のマスをクリック
+    Note over Canvas: 盤面外（余白等）のクリックはここで無視し、<br/>以降の通知は行わない
     Canvas->>Ctrl: ピクセル座標→交点座標(row, col)
     Ctrl->>State: (row, col) へ着手要求
-    State->>Board: 着手を試みる
 
-    alt 既に石がある or 対局が既に終了している
-        Board-->>State: 失敗
+    alt 対局が既に終了している
+        Note over State: 何もしない（REQ-11）
         State-->>Ctrl: 失敗
-        Note over Ctrl: 何もしない（REQ-05, REQ-11）
-    else 着手成功
-        Board-->>State: 成功
-        State->>Win: 勝敗判定を依頼
-        alt 勝利成立
-            Win-->>State: 勝利・ハイライト対象座標
-            Note over State: 「勝者あり」に更新（REQ-08, REQ-09）
-        else 盤面が全て埋まり勝利不成立
-            Note over State: 「引き分け」に更新（REQ-10）
-        else 継続
-            Note over State: 手番を交代（REQ-06）
+        Note over Ctrl: 何もしない
+    else 対局続行中
+        State->>Board: 着手を試みる
+        alt 既に石がある
+            Board-->>State: 失敗
+            State-->>Ctrl: 失敗
+            Note over Ctrl: 何もしない（REQ-05）
+        else 着手成功
+            Board-->>State: 成功
+            State->>Win: 勝敗判定を依頼
+            alt 勝利成立
+                Win-->>State: 勝利・ハイライト対象座標
+                Note over State: 「勝者あり」に更新（REQ-08, REQ-09）
+            else 盤面が全て埋まり勝利不成立
+                Note over State: 「引き分け」に更新（REQ-10）
+            else 継続
+                Note over State: 手番を交代（REQ-06）
+            end
+            State-->>Ctrl: 最新の対局状態
+            Ctrl->>Canvas: 石の描画を指示
+            Ctrl->>Canvas: ハイライト対象座標の描画を指示（勝利時, REQ-12）
+            Ctrl->>Main: 手番／勝敗結果の表示更新を指示（REQ-07, REQ-09, REQ-10）
         end
-        State-->>Ctrl: 最新の対局状態
-        Ctrl->>Canvas: 石の描画を指示
-        Ctrl->>Canvas: ハイライト対象座標の描画を指示（勝利時, REQ-12）
-        Ctrl->>Main: 手番／勝敗結果の表示更新を指示（REQ-07, REQ-09, REQ-10）
     end
 ```
 
