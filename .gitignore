@@ -8,3 +8,6 @@ venv/
 # PyInstallerビルド生成物（配布用exeはビルドの都度生成するためGit管理対象外）
 build/
 dist/
+
+# Claude Codeのローカル限定設定（個人・その場限りの許可設定はGit管理対象外）
+.claude/settings.local.json
