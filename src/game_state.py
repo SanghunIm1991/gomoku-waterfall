@@ -4,10 +4,10 @@
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional, Union
+from typing import List, Literal, Optional, Tuple, Union
 
 from src.board import Board
-from src.constants import BLACK, WHITE
+from src.constants import BLACK, WHITE, Color
 from src.win_checker import WinChecker
 
 
@@ -23,13 +23,13 @@ class GameStatus(Enum):
 class MoveResult:
     success: bool
     status: GameStatus
-    winner: Optional[str]
-    highlight_cells: list
-    current_turn: str
-    moved_color: Optional[str]
+    winner: Optional[Color]
+    highlight_cells: List[Tuple[int, int]]
+    current_turn: Color
+    moved_color: Optional[Color]
 
 
-def _other_color(color):
+def _other_color(color: Color) -> Color:
     return WHITE if color == BLACK else BLACK
 
 
@@ -37,12 +37,12 @@ class GameState:
     def __init__(self):
         self._board = Board()
         self._win_checker = WinChecker()
-        self._current_turn = BLACK
+        self._current_turn: Color = BLACK
         self._is_over = False
-        self._winner = None
-        self._highlight_cells = []
+        self._winner: Optional[Color] = None
+        self._highlight_cells: List[Tuple[int, int]] = []
 
-    def play(self, row, col):
+    def play(self, row: int, col: int) -> MoveResult:
         if self.is_game_over():
             return MoveResult(
                 success=False,
@@ -102,21 +102,21 @@ class GameState:
             moved_color=placing_color,
         )
 
-    def get_current_turn(self):
+    def get_current_turn(self) -> Color:
         return self._current_turn
 
-    def is_game_over(self):
+    def is_game_over(self) -> bool:
         return self._is_over
 
-    def get_result(self):
+    def get_result(self) -> Union[Color, Literal["DRAW"], None]:
         if not self._is_over:
             return None
         return self._winner if self._winner is not None else "DRAW"
 
-    def get_highlight_cells(self):
+    def get_highlight_cells(self) -> List[Tuple[int, int]]:
         return self._highlight_cells
 
-    def reset(self):
+    def reset(self) -> None:
         self._board.reset()
         self._current_turn = BLACK
         self._is_over = False

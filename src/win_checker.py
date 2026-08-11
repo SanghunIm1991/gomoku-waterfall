@@ -3,8 +3,10 @@
 # 対応要件: REQ-08, REQ-09, REQ-12, NFR-05, CON-02
 
 from dataclasses import dataclass, field
+from typing import List, Tuple
 
-from src.constants import BOARD_SIZE, WIN_LENGTH
+from src.board import Board
+from src.constants import BOARD_SIZE, WIN_LENGTH, Color
 
 # 縦・横・右上がり斜め・右下がり斜めの4方向（片方向のみ。逆方向は符号反転で数える）
 _DIRECTIONS = [(0, 1), (1, 0), (1, -1), (1, 1)]
@@ -13,12 +15,12 @@ _DIRECTIONS = [(0, 1), (1, 0), (1, -1), (1, 1)]
 @dataclass
 class WinResult:
     is_win: bool
-    cells: list = field(default_factory=list)
+    cells: List[Tuple[int, int]] = field(default_factory=list)
 
 
 class WinChecker:
-    def check_win(self, board, row, col, color):
-        all_cells = []
+    def check_win(self, board: Board, row: int, col: int, color: Color) -> WinResult:
+        all_cells: List[Tuple[int, int]] = []
         is_win = False
 
         for d_row, d_col in _DIRECTIONS:
