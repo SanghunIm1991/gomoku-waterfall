@@ -5,9 +5,16 @@
 | 項目 | 内容 |
 |---|---|
 | プロジェクト名 | 五目並べゲーム (Gomoku) |
-| 版数 | 1.0 |
+| 版数 | 1.1 |
 | 作成日 | 2026-08-11 |
-| 対象 | `docs/02_component_design/component_design.md` v1.0（承認済み） |
+| 対象 | `docs/02_component_design/component_design.md` v1.1（承認済みv1.0を、本書レビューで検出した対応要件欄の不整合修正に合わせて改訂） |
+
+### 改訂履歴
+
+| 版数 | 内容 |
+|---|---|
+| 1.0 | 初版作成 |
+| 1.1 | レビュー指摘反映。①`MoveResult`に`moved_color`を追加しFUNC-06/FUNC-20の記述を修正、②FUNC-05の連続数カウント方法を明確化、③FUNC-06/FUNC-11の対応要件にREQ-03を追加、④FUNC-22からNFR-02を削除（対応するコンポーネント無しとの既定と整合）、⑤COMP-01/02/03の対応要件欄の不整合を`component_design.md`側で解消（併せてv1.1化） |
 
 ## 2. 目的・位置づけ
 
@@ -26,7 +33,7 @@ CLAUDE.md の品質方針（テスト容易性）に基づき、ロジック層�
 | `StoneValue` | 盤面マスの状態。`EMPTY` / `BLACK` / `WHITE` のいずれか |
 | `GameStatus` | 着手結果の状態。`ONGOING`（継続）／`WIN`（勝利成立）／`DRAW`（引き分け）／`ALREADY_OVER`（対局終了後の着手要求）／`INVALID_MOVE`（既に石がある交点への着手要求） |
 | `WinResult` | `is_win: bool`（勝利成立か）, `cells: list[tuple[int, int]]`（勝利成立時のハイライト対象座標一覧。不成立時は空リスト） |
-| `MoveResult` | `success: bool`（着手が受理されたか）, `status: GameStatus`, `winner: Color \| None`（勝者。未確定/引き分けは`None`）, `highlight_cells: list[tuple[int, int]]`, `current_turn: Color`（この結果の後の手番） |
+| `MoveResult` | `success: bool`（着手が受理されたか）, `status: GameStatus`, `winner: Color \| None`（勝者。未確定/引き分けは`None`）, `highlight_cells: list[tuple[int, int]]`, `current_turn: Color`（この結果の後の手番）, `moved_color: Color \| None`（今回の呼び出しで実際に石が置かれた色。`success=False`（`ALREADY_OVER`/`INVALID_MOVE`）の場合は`None`） |
 | 座標 | `(row, col)` の `tuple[int, int]`。`0 <= row, col <= BOARD_SIZE - 1` |
 
 ## 4. COMP-07 Constants（定数一覧）
@@ -90,7 +97,7 @@ CLAUDE.md の品質方針（テスト容易性）に基づき、ロジック層�
 - **引数**: `board`（判定対象の盤面）／`row`, `col`（直前に石が置かれた座標）／`color`（判定対象の色。通常は直前に置かれた石の色）
 - **戻り値**: `WinResult`（`is_win`, `cells`）
 - **事前条件**: `board.get_stone(row, col) == color` であること（呼び出し側が直前の着手座標を渡す契約。GameStateからのみ呼び出される）
-- **正常系（判定方法）**: 縦／横／右上がり斜め／右下がり斜めの4方向それぞれについて、起点 `(row, col)` から両方向に同色 `color` の連続マスを数える。いずれかの方向で連続数が `WIN_LENGTH`（5）以上（長連含む）の場合、`is_win = True` とし、`cells` にはその方向で連続している同色マスの座標を**連続分すべて**含める（5つに限らない。REQ-12）。複数方向が同時に成立した場合は、成立した全方向の座標を`cells`に統合する（重複は除く）
+- **正常系（判定方法）**: 縦／横／右上がり斜め／右下がり斜めの4方向それぞれについて、起点 `(row, col)` を基準に「順方向への同色連続マス数」と「逆方向への同色連続マス数」を数え、`連続数 = 1（起点自身）+ 順方向連続数 + 逆方向連続数` とする。いずれかの方向でこの連続数が `WIN_LENGTH`（5）以上（長連含む）の場合、`is_win = True` とし、`cells` にはその方向で連続している同色マスの座標を**連続分すべて**含める（5つに限らない。REQ-12）。複数方向が同時に成立した場合は、成立した全方向の座標を`cells`に統合する（重複は除く）
 - **異常系**: いずれの方向でも `WIN_LENGTH` に達しない場合、`is_win = False`, `cells = []`
 - **対応要件**: REQ-08, REQ-09, REQ-12, CON-02
 
@@ -108,14 +115,15 @@ CLAUDE.md の品質方針（テスト容易性）に基づき、ロジック層�
 ### FUNC-06 `GameState.play(row: int, col: int) -> MoveResult`
 - **引数**: `row`, `col`（クリックされた交点座標）
 - **戻り値**: `MoveResult`
-- **正常系・異常系（分岐）**:
-  1. 対局が既に終了している（`is_game_over() == True`）場合: Boardを変更せず `success=False, status=ALREADY_OVER, winner=現在の勝者/None, highlight_cells=現在のハイライト, current_turn=現在の手番` を返す（REQ-11）
-  2. `board.place_stone(row, col, 現在の手番の色)` が `False`（既に石がある）場合: `success=False, status=INVALID_MOVE, winner=None, highlight_cells=[], current_turn=現在の手番（変更なし）` を返す（REQ-05）
-  3. 着手成功時、`win_checker.check_win(board, row, col, 現在の手番の色)` を実行:
-     - 勝利成立（`is_win=True`）: 内部状態を「対局終了・勝者=現在の手番」に更新し、`success=True, status=WIN, winner=現在の手番, highlight_cells=判定結果のcells, current_turn=現在の手番（手番交代なし）` を返す（REQ-08, REQ-09, REQ-12）
-     - 勝利不成立かつ `board.is_full() == True`: 内部状態を「対局終了・引き分け」に更新し、`success=True, status=DRAW, winner=None, highlight_cells=[], current_turn=現在の手番` を返す（REQ-10）
-     - それ以外（対局継続）: 手番を相手の色に交代し、`success=True, status=ONGOING, winner=None, highlight_cells=[], current_turn=交代後の手番` を返す（REQ-06）
-- **対応要件**: REQ-04, REQ-05, REQ-06, REQ-08, REQ-09, REQ-10, REQ-11, REQ-12
+- **正常系・異常系（分岐）**: 以下、`placing_color` は本呼び出し開始時点の現在の手番（着手を試みる色）を表す
+  1. 対局が既に終了している（`is_game_over() == True`）場合: Boardを変更せず `success=False, status=ALREADY_OVER, winner=現在の勝者/None, highlight_cells=現在のハイライト, current_turn=現在の手番, moved_color=None` を返す（REQ-11）
+  2. `board.place_stone(row, col, placing_color)` が `False`（既に石がある）場合: `success=False, status=INVALID_MOVE, winner=None, highlight_cells=[], current_turn=現在の手番（変更なし）, moved_color=None` を返す（REQ-05）
+  3. 着手成功時、`win_checker.check_win(board, row, col, placing_color)` を実行:
+     - 勝利成立（`is_win=True`）: 内部状態を「対局終了・勝者=`placing_color`」に更新し、`success=True, status=WIN, winner=placing_color, highlight_cells=判定結果のcells, current_turn=placing_color（手番交代なし）, moved_color=placing_color` を返す（REQ-08, REQ-09, REQ-12）
+     - 勝利不成立かつ `board.is_full() == True`: 内部状態を「対局終了・引き分け」に更新し、`success=True, status=DRAW, winner=None, highlight_cells=[], current_turn=placing_color, moved_color=placing_color` を返す（REQ-10）
+     - それ以外（対局継続）: 手番を相手の色に交代し、`success=True, status=ONGOING, winner=None, highlight_cells=[], current_turn=交代後の手番（相手の色）, moved_color=placing_color` を返す（REQ-06）
+- **補足**: `moved_color` は着手が受理された（`success=True`）場合に限り `placing_color` を返す。`ONGOING` の場合は `current_turn` が手番交代後の値（相手の色）になるため、呼び出し側（AppController）が描画すべき石の色は `current_turn` ではなく `moved_color` を参照すること（FUNC-20参照）
+- **対応要件**: REQ-03, REQ-04, REQ-05, REQ-06, REQ-08, REQ-09, REQ-10, REQ-11, REQ-12
 
 ### FUNC-07 `GameState.get_current_turn() -> Color`
 - **引数**: なし
@@ -141,7 +149,7 @@ CLAUDE.md の品質方針（テスト容易性）に基づき、ロジック層�
 - **引数**: なし
 - **戻り値**: なし
 - **正常系**: `board.reset()` を呼び、手番を `BLACK`（先手）に、対局終了フラグ・勝者・ハイライト対象座標を初期状態に戻す
-- **対応要件**: REQ-13
+- **対応要件**: REQ-03, REQ-13
 
 ## 8. COMP-04 MainWindow（メインウィンドウ）
 
@@ -225,7 +233,7 @@ CLAUDE.md の品質方針（テスト容易性）に基づき、ロジック層�
   1. `game_state.play(row, col)` を呼び出し `MoveResult` を得る
   2. `result.status` が `INVALID_MOVE` または `ALREADY_OVER` の場合、GUI更新は行わない（REQ-05, REQ-11）
   3. `result.status` が `ONGOING` / `WIN` / `DRAW` のいずれかの場合:
-     - `board_canvas.draw_stone(row, col, 着手した色)` を呼ぶ
+     - `board_canvas.draw_stone(row, col, result.moved_color)` を呼ぶ（`current_turn` は`ONGOING`時に手番交代後の値となるため使用しないこと。FUNC-06参照）
      - `result.status == WIN` の場合、`board_canvas.draw_highlight(result.highlight_cells)` を呼ぶ（REQ-12）
      - `main_window.update_status_text(...)` を、`result.status` に応じた表示文言（手番表示／勝者表示／引き分け表示）で呼ぶ（REQ-07, REQ-09, REQ-10）
 - **非機能要件対応**: 上記処理は同期的に完結させ、非同期処理・待機を挟まない（NFR-03）
@@ -241,7 +249,8 @@ CLAUDE.md の品質方針（テスト容易性）に基づき、ロジック層�
 - **引数**: なし
 - **戻り値**: なし
 - **正常系（処理内容）**: `board_canvas.set_click_callback(self.on_board_click)`、`main_window.set_reset_callback(self.on_reset_click)` を登録した上で、`board_canvas.draw_grid()` と、先手（黒）の手番表示を `main_window.update_status_text(...)` で行う
-- **対応要件**: REQ-07（初期表示）, NFR-02（起動時処理の一部。起動処理本体は `src/main.py` が担う）
+- **対応要件**: REQ-07（初期表示）
+- **補足**: NFR-02（Windows GUIアプリとして起動可能）はコンポーネント設計書の既定（COMP-04注記参照）通り `src/main.py` の起動処理本体が担うため、本関数の対応要件には含めない
 
 ## 11. 今後の工程
 

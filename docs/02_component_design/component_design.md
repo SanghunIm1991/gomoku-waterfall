@@ -5,9 +5,16 @@
 | 項目 | 内容 |
 |---|---|
 | プロジェクト名 | 五目並べゲーム (Gomoku) |
-| 版数 | 1.0 |
+| 版数 | 1.1 |
 | 作成日 | 2026-08-11 |
 | 対象 | `docs/01_requirements/requirements.md` v1.1 |
+
+### 改訂履歴
+
+| 版数 | 内容 |
+|---|---|
+| 1.0 | 初版作成・承認済み（`docs/qa_log.md` No.10） |
+| 1.1 | 関数設計書レビューで検出した対応要件欄の不整合を修正。COMP-01にREQ-10、COMP-02にREQ-09、COMP-03にREQ-08・REQ-12を追加（根拠は各コンポーネントの説明を参照）。あわせて`docs/traceability_matrix.md`の要件×コンポーネント対応表を更新 |
 
 ## 2. 目的・位置づけ
 
@@ -84,7 +91,8 @@ flowchart TB
   - 盤面を初期状態（全マス空き）にリセットする
 - **保持データ**: 15×15マスの状態（空き／黒／白）
 - **依存**: COMP-07 Constants（盤面マス数）
-- **対応要件**: REQ-04, REQ-05, REQ-13, NFR-05
+- **対応要件**: REQ-04, REQ-05, REQ-10, REQ-13, NFR-05
+  - REQ-10（引き分け判定）: 「盤面が全て埋まっているかの判定」はGameStateが引き分けを判定する際の直接の根拠となるため、Boardの責務として本要件に対応する
 
 ### COMP-02 WinChecker（勝敗判定ロジック）
 
@@ -94,7 +102,8 @@ flowchart TB
   - 勝利成立時、ハイライト対象となる連続石の座標一覧を返す
 - **保持データ**: なし（Boardの状態を引数として受け取る純粋な判定処理）
 - **依存**: COMP-01 Board（盤面参照）、COMP-07 Constants（勝利に必要な連続数）
-- **対応要件**: REQ-08, REQ-12, NFR-05, CON-02
+- **対応要件**: REQ-08, REQ-09, REQ-12, NFR-05, CON-02
+  - REQ-09（勝利成立時の対局終了・勝者表示）: 対局終了・勝者確定のトリガーとなる勝利成立の判定そのものを担うため、GameState・MainWindow・AppControllerに加えWinCheckerも本要件に対応する
 
 ### COMP-03 GameState（対局状態管理）
 
@@ -107,7 +116,9 @@ flowchart TB
   - 対局状態をリセットする（Boardのリセットを含む）
 - **保持データ**: 現在の手番、対局終了フラグ、勝者、ハイライト対象座標
 - **依存**: COMP-01 Board、COMP-02 WinChecker
-- **対応要件**: REQ-03, REQ-04, REQ-05, REQ-06, REQ-07, REQ-09, REQ-10, REQ-11, REQ-13, CON-01
+- **対応要件**: REQ-03, REQ-04, REQ-05, REQ-06, REQ-07, REQ-08, REQ-09, REQ-10, REQ-11, REQ-12, REQ-13, CON-01
+  - REQ-08（五連・長連の判定）: 判定処理自体はWinCheckerが担うが、着手のたびにWinCheckerへ判定を依頼し結果を対局状態に反映する主体はGameStateであるため、本要件に対応する
+  - REQ-12（勝利ハイライト表示）: WinCheckerの判定結果（ハイライト対象座標）を保持し、AppController経由でGUIに提供する主体はGameStateであるため、本要件に対応する
 
 ### COMP-04 MainWindow（メインウィンドウ）
 
