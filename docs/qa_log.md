@@ -19,3 +19,4 @@ Claudeがユーザーに判断・承認を仰ぎ、ユーザーが回答した�
 | 13 | 2026-08-11 | 実装準備 | 実装着手前の全体整合性チェックの結果報告、およびPC上のPython実行環境調査結果（`py`既定=Python 3.9.13/Visual Studio付属、`py -3.11`=Python 3.11.5/Anaconda3。両方tkinter動作確認済み）を提示し、実装に使用する環境の選択を確認 | Python 3.9.13（Visual Studio付属、`py`ランチャー既定）を使用する。CLAUDE.mdの「実装環境（Python）」章に反映済み |
 | 14 | 2026-08-11 | テスト | テスト工程の成果物（テスト仕様書・手動テストチェックリスト・テストコード）を承認してよいか、あわせてTC-MAN-04（重複クリック無視）・TC-MAN-06（引き分け表示）の実機確認結果 | 承認する。TC-MAN-04・TC-MAN-06とも実機確認済みで期待結果通り（合格）。`manual_test_checklist.md`の結果欄・確認日（2026-08-11）を更新済み。これによりウォーターフォール開発プロセス（要件定義→…→テスト）が一通り完了 |
 | 15 | 2026-08-11 | 配布 | Windows向け配布マニュアル作成にあたり、配布方式を「スタンドアロンexe化（PyInstaller）」と「ソース配布＋Python実行」のどちらにするか | スタンドアロンexe化（PyInstaller）を採用する。開発環境にPyInstallerを新規インストールしビルド、`dist\Gomoku.exe`が正常に起動することを確認済み。`docs/05_distribution/distribution_manual.md`として手順を整理 |
+| 16 | 2026-08-11 | 配布 | `docs/05_distribution/distribution_manual.md`（v1.0）の内容について承認してよいか | 承認する |
