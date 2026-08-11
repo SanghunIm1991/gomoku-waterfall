@@ -26,9 +26,13 @@ Claude Codeを用いた**ウォーターフォール型開発の練習**プロ�
 - [x] `docs/03_function_design/function_design.md` 作成済み（v1.1）
 - [x] ユーザーによる関数設計書（v1.1）のレビュー・承認 完了（2026-08-11）
 - [x] **実装 完了**（`src/` 一式。`py src\main.py` でGUI起動・着手・勝敗判定・ハイライト・リセットの動作を確認済み）
-- [ ] テスト ← 次はここから再開
+- [x] `docs/04_test/test_specification.md` 作成済み（v1.0。ロジック層COMP-01〜03・COMP-07 Constantsの自動テストケースをFUNC-01〜11の正常系／異常系に基づき設計）
+- [x] `docs/04_test/manual_test_checklist.md` 作成済み（v1.0。GUI層・Controller層（COMP-04〜06）およびNFR-01〜03・CON-01は自動単体テスト対象外のため手動確認項目として整理。TC-MAN-04・TC-MAN-06は次回セッションで実機確認・結果欄更新が必要）
+- [x] `tests/test_board.py`, `tests/test_win_checker.py`, `tests/test_game_state.py`, `tests/test_constants.py` 実装済み（`py -m unittest discover tests` で計30件全て成功を確認済み）
+- [x] `docs/traceability_matrix.md` の「③関数×テスト対応表」「④要件×テスト対応表」を更新済み（全要件ID（REQ/NFR/CON）の行に最低1つのテストIDが記載されていることを確認済み。NFR-04・CON-03は従来通りテスト対象外として注記）
+- [ ] テスト工程の成果物（テスト仕様書・テストコード）についてユーザーレビュー・承認 待ち ← 次はここから再開
 
-再開時は、テスト仕様書（`docs/04_test/`）を作成し、ロジック層（COMP-01〜03、`docs/03_function_design/function_design.md` の各関数の正常系／異常系）を元にテストケースを設計する。あわせて `tests/` にテストコードを実装し、完了時に `docs/traceability_matrix.md` の「③関数×テスト対応表」「④要件×テスト対応表」を更新すること。
+再開時は、まずユーザーにテスト仕様書・手動テストチェックリスト・テストコードのレビューを依頼し、承認を得ること。あわせて `docs/04_test/manual_test_checklist.md` のTC-MAN-04（重複クリック無視）・TC-MAN-06（引き分け表示）を実機で確認し、結果欄・確認日を更新すること。承認後、本プロジェクトの開発プロセス（要件定義→…→テスト）が一通り完了する。
 
 ## 確定した仕様（要件定義で合意済み）
 
