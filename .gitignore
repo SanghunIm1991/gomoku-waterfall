@@ -4,3 +4,7 @@ __pycache__/
 venv/
 *.egg-info/
 .pytest_cache/
+
+# PyInstallerビルド生成物（配布用exeはビルドの都度生成するためGit管理対象外）
+build/
+dist/
