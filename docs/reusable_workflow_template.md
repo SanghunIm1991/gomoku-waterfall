@@ -1,8 +1,8 @@
 # 再利用可能なプロジェクト運用テンプレート
 
-本ドキュメントは、`D:\claudeProject`（五目並べ・ウォーターフォール練習）で確立した**プロジェクト非依存の運用ルール**を抜き出したものです。次に別のプロジェクトフォルダで作業を始める際、このドキュメントの内容を新しいプロジェクトの `CLAUDE.md` にコピー＆調整して使うことを想定しています。
+本ドキュメントは、**プロジェクト非依存の運用ルール**をまとめたものです。新しいプロジェクトフォルダで作業を始める際、この内容を新しいプロジェクトの `CLAUDE.md` にコピー＆調整して使うことを想定しています。
 
-五目並べ固有の仕様（15×15盤面、tkinter採用など）は含めていません。含まれるのは「進め方・承認ルール・記録方法」のみです。
+含まれるのは「進め方・承認ルール・記録方法」のみで、特定プロジェクトの題材・技術スタック・仕様は含めていません。
 
 ---
 
@@ -68,18 +68,6 @@ Claudeがユーザーに判断や承認を仰ぎ、ユーザーが回答した�
   git commit -m "[claude] 要件定義書を作成" --author="Claude <noreply@anthropic.com>"
   ```
 - ユーザー自身が手動でコミットする場合は、通常通りグローバルGit設定（ImSanghun / 21452104tpu@gmail.com）でコミットしてよい（接頭辞不要）
-
-## このPC（Windows）に関する共通の環境メモ
-
-新しいプロジェクトが別言語・別ツールでも、以下はこのマシン固有の事情として当てはまる可能性がある。
-
-- Gitは元々未インストールで、`winget install --id Git.Git -e` で導入した実績あり
-- **PowerShell環境ではツール呼び出しごとにシェル状態（PATH等）がリセットされる**。`git` 等のコマンドが見つからない場合は以下でPATHを通してから実行する:
-  ```powershell
-  [System.Environment]::SetEnvironmentVariable("PATH", [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User"), "Process")
-  ```
-- `git config user.email` / `user.name` はグローバル設定済み（21452104tpu@gmail.com / ImSanghun）
-- Pythonを使うプロジェクトの場合: PATH上の `python` コマンドはMicrosoft Storeのスタブ（実体無し）を指すことがあるため注意。`py` ランチャー経由での実行を検討する（本プロジェクトでは `py`既定が3.9.13だったが、次のプロジェクトでは要件に応じて適切なバージョンを確認・選定すること）
 
 ## フォルダ構成（ウォーターフォール型を採用する場合の例）
 
