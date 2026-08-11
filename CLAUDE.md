@@ -37,6 +37,19 @@ Claude Codeを用いた**ウォーターフォール型開発の練習**プロ�
 - 先手: 黒石
 - 構成管理: Git（ローカルリポジトリのみ、リモート無し）
 
+## 実装環境（Python）
+
+このPCには複数のPythonが入っており、PATH上の `python` コマンドはMicrosoft Storeのスタブ（実体無し・動作不安定）を指してしまう。実装・実行・テストでは以下の環境を使用すること。
+
+- 使用するインタプリタ: Python 3.9.13（Visual Studio付属、`C:\Program Files (x86)\Microsoft Visual Studio\Shared\Python39_64\python.exe`）
+- 起動方法: `py` ランチャー経由で実行する（このPCでは `py` の既定バージョンが3.9.13であるため、バージョン指定は省略可）
+  ```powershell
+  py src\main.py
+  py -m unittest discover tests
+  ```
+- `tkinter`（標準ライブラリ、Tk 8.6）が同環境で動作することを確認済み。追加パッケージのインストールは不要（NFR-01）
+- 参考: このPCには `py -3.11`（Anaconda3, Python 3.11.5）も存在するが、本プロジェクトでは使用しない（2026-08-11、`docs/qa_log.md` No.13で決定）
+
 ## トレーサビリティマトリックス
 
 要件から実装・テストまでの対応関係を追跡できるよう、`docs/traceability_matrix.md` を工程が進むたびに追記・更新する（工程ごとに別ファイルを作らず、1ファイルで育てていく）。
