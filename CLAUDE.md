@@ -23,11 +23,12 @@ Claude Codeを用いた**ウォーターフォール型開発の練習**プロ�
 - [x] `docs/traceability_matrix.md` 作成済み（4つの対応表を行×列＋○のマトリクス形式で管理。ルール詳細は「トレーサビリティマトリックス」章、経緯は `docs/qa_log.md` No.6-7）
 - [x] `docs/02_component_design/component_design.md` 作成済み（v1.0。「要件×コンポーネント対応表」にも反映済み）
 - [x] ユーザーによるコンポーネント設計書のレビュー・承認 完了（2026-08-11、詳細は `docs/qa_log.md` No.10）
-- [ ] **関数設計 着手中** ← 次はここから再開
-- [ ] 実装
-- [ ] テスト
+- [x] `docs/03_function_design/function_design.md` 作成済み（v1.1）
+- [x] ユーザーによる関数設計書（v1.1）のレビュー・承認 完了（2026-08-11）
+- [x] **実装 完了**（`src/` 一式。`py src\main.py` でGUI起動・着手・勝敗判定・ハイライト・リセットの動作を確認済み）
+- [ ] テスト ← 次はここから再開
 
-再開時は、関数設計書（`docs/03_function_design/function_design.md`）の内容をユーザーに提示し、レビュー・承認を得ること。承認後、実装（`src/`）に着手し、完了時に `docs/traceability_matrix.md` の「③関数×テスト対応表」に行（関数ID）を追加すること（本行の追加自体はテスト仕様書作成時でよい）。
+再開時は、テスト仕様書（`docs/04_test/`）を作成し、ロジック層（COMP-01〜03、`docs/03_function_design/function_design.md` の各関数の正常系／異常系）を元にテストケースを設計する。あわせて `tests/` にテストコードを実装し、完了時に `docs/traceability_matrix.md` の「③関数×テスト対応表」「④要件×テスト対応表」を更新すること。
 
 ## 確定した仕様（要件定義で合意済み）
 
