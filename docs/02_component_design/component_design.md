@@ -25,31 +25,27 @@ CLAUDE.md の品質方針（テスト容易性）に基づき、以下の方針�
 
 ### 3.1 レイヤー構成
 
-```
-┌─────────────────────────────────────────┐
-│ GUI層 (tkinter に依存)                    │
-│   COMP-04 MainWindow                      │
-│   COMP-05 BoardCanvas                     │
-└───────────────▲───────────────────────────┘
-                 │ 呼び出し / コールバック
-┌───────────────┴───────────────────────────┐
-│ Controller層                               │
-│   COMP-06 AppController                    │
-└───────────────▲───────────────────────────┘
-                 │ 呼び出し（戻り値で結果を返す）
-┌───────────────┴───────────────────────────┐
-│ ロジック層 (tkinterに非依存・単体テスト対象) │
-│   COMP-01 Board                            │
-│   COMP-02 WinChecker                       │
-│   COMP-03 GameState                        │
-└─────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph GUI["GUI層（tkinter に依存）"]
+        COMP04["COMP-04 MainWindow"]
+        COMP05["COMP-05 BoardCanvas"]
+    end
+    subgraph CTRL["Controller層"]
+        COMP06["COMP-06 AppController"]
+    end
+    subgraph LOGIC["ロジック層（tkinter に非依存・単体テスト対象）"]
+        COMP01["COMP-01 Board"]
+        COMP02["COMP-02 WinChecker"]
+        COMP03["COMP-03 GameState"]
+    end
+    COMP07["COMP-07 Constants（全層から参照される定数）"]
 
-┌─────────────────────────────────────────┐
-│ COMP-07 Constants（全層から参照される定数）  │
-└─────────────────────────────────────────┘
+    GUI -- "呼び出し / コールバック" --> CTRL
+    CTRL -- "呼び出し（戻り値で結果を返す）" --> LOGIC
 ```
 
-依存の向きは上から下（GUI層 → Controller層 → ロジック層）のみとし、逆方向の依存（ロジック層からGUI層・Controller層への参照）は持たない。
+依存の向きは上から下（GUI層 → Controller層 → ロジック層）のみとし、逆方向の依存（ロジック層からGUI層・Controller層への参照）は持たない。COMP-07 Constantsは全層から参照されるが、図の見やすさのため依存の矢印は省略している。
 
 ## 4. モジュール（ファイル）構成
 
@@ -155,32 +151,58 @@ CLAUDE.md の品質方針（テスト容易性）に基づき、以下の方針�
 
 ### 7.1 石を置く操作（REQ-04〜REQ-12）
 
-```
-ユーザー操作: 盤面上のマスをクリック
-  → BoardCanvas: クリックされたピクセル座標を交点座標(row, col)に変換
-  → AppController: (row, col) を GameState に着手要求として渡す
-  → GameState: Board に着手を試みる
-      - 既に石がある場合: 失敗を返す → AppController は何もしない（REQ-05）
-      - 対局が既に終了している場合: 失敗を返す → AppController は何もしない（REQ-11）
-      - 成功した場合:
-          → GameState: WinChecker に勝敗判定を依頼
-              - 勝利成立: GameState を「勝者あり」に更新、ハイライト対象座標を保持（REQ-08, REQ-09）
-              - 盤面が全て埋まり勝利不成立: GameState を「引き分け」に更新（REQ-10）
-              - どちらでもない: 手番を交代（REQ-06）
-  → AppController: GameState の最新状態を取得し、
-      - BoardCanvas に石の描画を指示
-      - 勝利成立時はハイライト対象座標の描画を指示（REQ-12）
-      - MainWindow に手番／勝敗結果の表示更新を指示（REQ-07, REQ-09, REQ-10）
+```mermaid
+sequenceDiagram
+    actor User as ユーザー
+    participant Canvas as BoardCanvas
+    participant Ctrl as AppController
+    participant State as GameState
+    participant Board as Board
+    participant Win as WinChecker
+    participant Main as MainWindow
+
+    User->>Canvas: 盤面上のマスをクリック
+    Canvas->>Ctrl: ピクセル座標→交点座標(row, col)
+    Ctrl->>State: (row, col) へ着手要求
+    State->>Board: 着手を試みる
+
+    alt 既に石がある or 対局が既に終了している
+        Board-->>State: 失敗
+        State-->>Ctrl: 失敗
+        Note over Ctrl: 何もしない（REQ-05, REQ-11）
+    else 着手成功
+        Board-->>State: 成功
+        State->>Win: 勝敗判定を依頼
+        alt 勝利成立
+            Win-->>State: 勝利・ハイライト対象座標
+            Note over State: 「勝者あり」に更新（REQ-08, REQ-09）
+        else 盤面が全て埋まり勝利不成立
+            Note over State: 「引き分け」に更新（REQ-10）
+        else 継続
+            Note over State: 手番を交代（REQ-06）
+        end
+        State-->>Ctrl: 最新の対局状態
+        Ctrl->>Canvas: 石の描画を指示
+        Ctrl->>Canvas: ハイライト対象座標の描画を指示（勝利時, REQ-12）
+        Ctrl->>Main: 手番／勝敗結果の表示更新を指示（REQ-07, REQ-09, REQ-10）
+    end
 ```
 
 ### 7.2 リセット操作（REQ-13）
 
-```
-ユーザー操作: リセットボタンをクリック
-  → MainWindow: コールバック経由で AppController に通知
-  → AppController: GameState をリセット（Board・手番・勝敗状態を初期化）
-  → AppController: BoardCanvas の表示をクリアするよう指示
-  → AppController: MainWindow の表示を初期状態（先手＝黒の手番表示）に更新するよう指示
+```mermaid
+sequenceDiagram
+    actor User as ユーザー
+    participant Main as MainWindow
+    participant Ctrl as AppController
+    participant State as GameState
+    participant Canvas as BoardCanvas
+
+    User->>Main: リセットボタンをクリック
+    Main->>Ctrl: コールバック経由で通知
+    Ctrl->>State: リセット（Board・手番・勝敗状態を初期化）
+    Ctrl->>Canvas: 表示をクリアするよう指示
+    Ctrl->>Main: 表示を初期状態（先手＝黒の手番表示）に更新するよう指示
 ```
 
 ## 8. 今後の工程
