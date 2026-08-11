@@ -45,7 +45,7 @@ class TestWinChecker(unittest.TestCase):
         self.assertTrue(result.is_win)
         self.assertEqual(set(result.cells), set(cells))
 
-    def test_TC_WIN_04_diagonal_down_left_five_wins(self):
+    def test_TC_WIN_04_diagonal_up_right_five_wins(self):
         cells = [(0, 4), (1, 3), (2, 2), (3, 1), (4, 0)]
         _place(self.board, cells, BLACK)
 

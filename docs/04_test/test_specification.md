@@ -74,7 +74,7 @@ GUI層（COMP-04 MainWindow、COMP-05 BoardCanvas）およびController層（COM
 | TC-GS-08 | 引き分け成立後、`is_game_over()=True`、`get_result()`が`"DRAW"`を返す | FUNC-08, FUNC-09 | 正常系 | REQ-10 |
 | TC-GS-09 | `get_highlight_cells()`が、勝利前は空リスト、勝利成立後は判定対象座標を返す | FUNC-10 | 正常系 | REQ-12 |
 | TC-GS-10 | 対局進行後（手番交代・着手済みマスあり）に`reset()`を呼ぶと、手番が`BLACK`、`is_game_over()=False`、盤面が全マス`EMPTY`、`get_highlight_cells()=[]`に戻る | FUNC-11 | 正常系 | REQ-03, REQ-13 |
-| TC-GS-11 | 長連（6連）成立時、`GameState.play`経由でも`highlight_cells`に6マス全てが含まれる | FUNC-06, FUNC-10 | 正常系 | REQ-12 |
+| TC-GS-11 | 長連（6連）成立時、`GameState.play`の戻り値（`MoveResult.highlight_cells`）に6マス全てが含まれる | FUNC-06 | 正常系 | REQ-12 |
 
 ### 4.4 TEST-CONSTANTS（`tests/test_constants.py`）— 対象: COMP-07
 

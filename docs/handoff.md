@@ -13,6 +13,13 @@
 - `tests/test_board.py`, `tests/test_win_checker.py`, `tests/test_game_state.py`, `tests/test_constants.py`: 上記テスト仕様書に基づくテストコード（`unittest`）。計30件、`py -m unittest discover tests` で全件成功を確認済み
 - `docs/traceability_matrix.md` の「③関数×テスト対応表」「④要件×テスト対応表」: 上記テストIDで更新済み。全要件ID（REQ/NFR/CON）の行に最低1つのテストIDが記載されていることを確認済み（NFR-04・CON-03は運用・スコープ外のため対象外として注記）
 
+サブエージェントによる独立レビュー（2026-08-11）を実施し、以下3件の軽微な指摘を反映済み。
+1. `tests/test_win_checker.py` のTC-WIN-04メソッド名を`diagonal_down_left`→`diagonal_up_right`に修正（座標・ロジックは元々正しく、要件書の用語「右上がり斜め」との不一致のみの問題だった）
+2. `docs/traceability_matrix.md`「③関数×テスト対応表」でFUNC-10行から誤って対応付けていたTC-GS-11を削除（TC-GS-11は`play()`の戻り値＝FUNC-06を検証しており、`get_highlight_cells()`＝FUNC-10自体は検証していないため）。あわせて`test_specification.md`のTC-GS-11の対応関数欄も`FUNC-06`のみに修正
+3. `tests/test_game_state.py` のTC-GS-05・TC-GS-08で重複していた「盤面を安全パターンで1マス残して埋める」セットアップを`_fill_board_leaving_one_cell`ヘルパーに共通化
+
+レビューでは「AppController（COMP-06）はコンストラクタ注入構造のためスタブによる自動テストが可能では」という提案（任意）もあったが、今回は反映していない。修正後、`py -m unittest discover tests`で全30件成功を再確認済み。
+
 次回セッション再開時は、まずこれらの成果物をユーザーにレビューしてもらい、承認を得ること。承認をもって、本プロジェクトの開発プロセス（要件定義→コンポーネント設計→関数設計→実装→テスト）が一通り完了する。
 
 ### 2. 手動テストチェックリストの未実施項目

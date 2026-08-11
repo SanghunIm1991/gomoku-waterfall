@@ -48,6 +48,16 @@ class TestGameState(unittest.TestCase):
                 self.gs.play(0, i)  # WHITE（無関係なマス）
         return result
 
+    def _fill_board_leaving_one_cell(self, last_cell):
+        # 安全パターンで内部Boardへ直接配置し、盤面を1マス残して埋める
+        # （最後の1マスはplay()経由で着手し、DRAW判定を検証するために空けておく）。
+        for row in range(BOARD_SIZE):
+            for col in range(BOARD_SIZE):
+                if (row, col) == last_cell:
+                    continue
+                self.gs._board.place_stone(row, col, _draw_pattern_color(row, col))
+        self.gs._current_turn = _draw_pattern_color(*last_cell)
+
     def test_TC_GS_04_five_in_a_row_wins_without_turn_switch(self):
         result = self._play_black_horizontal_win(5)
 
@@ -61,12 +71,7 @@ class TestGameState(unittest.TestCase):
 
     def test_TC_GS_05_draw_when_board_full_without_win(self):
         last_cell = (0, 0)
-        for row in range(BOARD_SIZE):
-            for col in range(BOARD_SIZE):
-                if (row, col) == last_cell:
-                    continue
-                self.gs._board.place_stone(row, col, _draw_pattern_color(row, col))
-        self.gs._current_turn = _draw_pattern_color(*last_cell)
+        self._fill_board_leaving_one_cell(last_cell)
 
         result = self.gs.play(*last_cell)
 
@@ -95,12 +100,7 @@ class TestGameState(unittest.TestCase):
 
     def test_TC_GS_08_result_after_draw(self):
         last_cell = (0, 0)
-        for row in range(BOARD_SIZE):
-            for col in range(BOARD_SIZE):
-                if (row, col) == last_cell:
-                    continue
-                self.gs._board.place_stone(row, col, _draw_pattern_color(row, col))
-        self.gs._current_turn = _draw_pattern_color(*last_cell)
+        self._fill_board_leaving_one_cell(last_cell)
         self.gs.play(*last_cell)
 
         self.assertTrue(self.gs.is_game_over())
@@ -133,6 +133,8 @@ class TestGameState(unittest.TestCase):
                 self.assertEqual(self.gs._board.get_stone(row, col), EMPTY)
 
     def test_TC_GS_11_overline_highlights_all_cells_via_game_state(self):
+        # play()の戻り値（MoveResult.highlight_cells、FUNC-06）を検証する。
+        # get_highlight_cells()（FUNC-10）自体の検証はTC-GS-09で行う。
         # (7,0)〜(7,3)の4連と(7,5)の孤立石を先に置き、最後に隙間の(7,4)を
         # 埋めることで、1手で6連（長連）が成立する状況を作る
         # （5連の時点で対局が終了するため、単純に6手連続では長連を再現できない）。

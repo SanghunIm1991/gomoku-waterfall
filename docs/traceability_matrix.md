@@ -102,7 +102,7 @@
 | FUNC-07 | | | TC-GS-01, TC-GS-02 | | TC-MAN-02, TC-MAN-03 |
 | FUNC-08 | | | TC-GS-07, TC-GS-08 | | |
 | FUNC-09 | | | TC-GS-07, TC-GS-08 | | |
-| FUNC-10 | | | TC-GS-09, TC-GS-11 | | |
+| FUNC-10 | | | TC-GS-09 | | |
 | FUNC-11 | | | TC-GS-10 | | |
 | FUNC-12 | | | | | TC-MAN-02, TC-MAN-03, TC-MAN-05, TC-MAN-06, TC-MAN-07 |
 | FUNC-13 | | | | | TC-MAN-07 |
