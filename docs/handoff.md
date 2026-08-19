@@ -13,3 +13,5 @@
 2026-08-19、GitHubへのアップロードを実施。Privateリポジトリ `https://github.com/SanghunIm1991/gomoku-waterfall` を作成し、`master`ブランチをpush済み（`origin/master`を追跡、詳細は`docs/qa_log.md` No.17-18）。**以後の`git push`は都度ユーザーの明示的承認を得てから実行する運用**（CLAUDE.md「変更操作の承認について」章の通り）。
 
 同日、セッションの作業内容をサブエージェントにレビューさせ（`docs/qa_log.md` No.19）、次回以降の初回push作業では以下を標準手順に加えることで合意: ①ファイル名一覧だけでなく内容ベースのgrepで秘密情報混入を確認する、②リポジトリの公開範囲（Public/Private）をユーザーに明示的な選択肢として確認する。
+
+同日、GitHub接続がNFR-04「リモートリポジトリへの連携は行わない」と矛盾していたため、要件定義書をv1.2に改訂（NFR-04・構成管理欄を「必要に応じてリモート連携可」に修正、`docs/qa_log.md` No.20）。README.mdをGitHub向けに新規作成し、GitHubへpush済み（`73dc05d`）。
